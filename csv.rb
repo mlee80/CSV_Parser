@@ -12,7 +12,7 @@ def grant_search(grants, grant_number)
     end
   end
 
-duplicate_index
+  duplicate_index
 
 end
 
@@ -20,33 +20,53 @@ end
 CSV.foreach('grants.csv', headers:true) do |row|
   grant_number = row[1]
 
-# remove nil
+  # remove nil
   if grant_number == nil
     next
   end
 
-index = grant_search(grants, grant_number)
+  index = grant_search(grants, grant_number)
 
-if index
-  vesting = {vest_date: row[2], shares: row[3]}
-  grant_to_update = grants[index]
-  grant_to_update[:vestings] << vesting
+  if index
+    vesting = {vest_date: row[2], shares: row[3]}
+    grant_to_update = grants[index]
+    grant_to_update[:vestings] << vesting
 
   else
 
-  grant = {
-    account_id: row[0],
-    grant_number: grant_number,
-    vestings:[
-      {vest_date: row[2], shares: row[3]}
+    grant = {
+      account_id: row[0],
+      grant_number: grant_number,
+      vestings:[
+        {vest_date: row[2], shares: row[3]}
+      ]
+    }
+
+
+    grants << grant
+
+  end
+
+end
+
+
+CSV.open("Output.csv", "w") do |csv|
+  csv << ["account id", "grant number"]
+  grants.each do |grant|
+    row = [
+      grant[:account_id], grant[:grant_number]
     ]
-  }
 
 
-grants << grant
+    grant[:vestings].each do |vesting|
+      row << vesting[:vest_date]
+      row << vesting[:shares]
+    end
+
+    csv << row
+
+
+  end
+
 
 end
-
-end
-
-puts grants
